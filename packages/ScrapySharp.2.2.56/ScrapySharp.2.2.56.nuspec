@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ScrapySharp</id>
+    <version>2.2.56</version>
+    <title>ScrapySharp</title>
+    <authors>Romain Flechner</authors>
+    <owners>Romain Flechner</owners>
+    <licenseUrl>http://opensource.org/licenses/GPL-2.0</licenseUrl>
+    <projectUrl>https://bitbucket.org/rflechner/scrapysharp/wiki/Home</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Scraping Framework containing :
+- a web client able to simulate a web browser.
+- an HtmlAgilityPack extension to select elements using css selector (like JQuery)</description>
+    <summary>Scraping framework written in C#.</summary>
+    <releaseNotes>- Add some helpers to improve web browsing</releaseNotes>
+    <copyright>Romain Flechner</copyright>
+    <language>en-US</language>
+    <tags>Scraping html css linq agility</tags>
+    <dependencies>
+      <dependency id="HtmlAgilityPack" version="1.4.6" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Data" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Data.DataSetExtensions" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Web" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Xml" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Xml.Linq" targetFramework=".NETFramework4.0" />
+      <frameworkAssembly assemblyName="System.Runtime.Caching" targetFramework=".NETFramework4.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
