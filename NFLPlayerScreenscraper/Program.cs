@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
+using NFLPlayerScreenscraper.Models;
+using PetaPoco;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
 
@@ -12,42 +14,90 @@ namespace NFLPlayerScreenscraper
 {
     class Program
     {
+        private static readonly Database Database = new Database("localDB");
         const string BaseUrl = "http://www.nfl.com";
 
-        private class Player
+        static void Main(string[] args)
         {
-            public string Position { get; set; }
-            public string Number { get; set; }
-            public string Name { get; set; }
-            public string Status { get; set; }
-            public string Team { get; set; }
+            WriteBanner();
 
-            public override string ToString()
+            var numberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
+            if (numberOfPlayersInTheDatabase != 0)
             {
-                return Position + "\t" + Number + "\t" + Name + "\t" + Status + "\t" + Team;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("There were already '{0}' players in the database. This is not an incremental insert program. Exiting...", numberOfPlayersInTheDatabase);
+                Console.ResetColor();
             }
+            else
+            {
+                var players = GetPlayersFromWeb();
+                ClearLine();
+                InsertPlayersIntoTheDatabase(players);
+                ClearLine();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Done.");
+                Console.ResetColor();
+            }
+
+            Console.WriteLine();
+#if DEBUG
+            Console.WriteLine();
+            Console.WriteLine("--- Press <ENTER> to exit. ---");
+#endif
+
+            Console.ReadLine();
         }
 
-        static void Main(string[] args)
+        private static void WriteBanner()
+        {
+            Console.WriteLine("**************************************************");
+            Console.WriteLine("NFL Player Screenscraper Program");
+            Console.WriteLine("by Jim Gorman, December 2013");
+            Console.WriteLine("https://github.com/TKirby42/NFLPlayerScreenscraper");
+            Console.WriteLine("**************************************************");
+            Console.WriteLine();
+        }
+
+        private static int GetNumberOfPlayersInTheDatabase()
+        {
+            return Database.ExecuteScalar<int>(Sql.Builder.Select("COUNT(PlayerID)").From("dbo.Players"));
+        }
+
+        private static IEnumerable<Player> GetPlayersFromWeb()
         {
             var browser = new ScrapingBrowser();
             var htmlWeb = new HtmlWeb();
             var players = new ConcurrentBag<Player>();
 
-            Parallel.For ('A', 'Z' + 1, c =>
-            {
-                Console.Write("\rLoading {0}", Convert.ToChar(c));
-                var startUrl = String.Format("/players/search?category=lastName&filter={0}&playerType=current", Convert.ToChar(c));
-                var doc = htmlWeb.Load(BaseUrl + startUrl);
-                LoadAPageOfPlayers(browser, doc.DocumentNode, players);
-            });
+            Parallel.For('A', 'Z' + 1, c =>
+                {
+                    Console.Write("\rLoading players whose last names begins with '{0}'.", Convert.ToChar(c));
+                    var startUrl = String.Format("/players/search?category=lastName&filter={0}&playerType=current",
+                                                 Convert.ToChar(c));
+                    var doc = htmlWeb.Load(BaseUrl + startUrl);
+                    LoadAPageOfPlayers(browser, doc.DocumentNode, players);
+                });
 
             //Console.WriteLine(players.Count());
             //Console.ReadLine();
 
-            players.OrderBy(p => p.Name).ToList().ForEach(Console.WriteLine);
-            Console.ReadLine();
+            //players.OrderBy(p => p.Name).ToList().ForEach(Console.WriteLine);
+            return players;
         }
+
+        private static void ClearLine()
+        {
+            Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
+        }
+
+        private static void InsertPlayersIntoTheDatabase(IEnumerable<Player> players)
+        {
+            Console.Write("\rInserting players into to the database.");
+            foreach (var player in players)
+            {
+                Database.Insert("Players", "PlayerID", player);
+            }
+        } 
 
         private static void LoadAPageOfPlayers(ScrapingBrowser browser, HtmlNode rootNode, ConcurrentBag<Player> players)
         {
@@ -80,27 +130,30 @@ namespace NFLPlayerScreenscraper
 
         private static void LoadPlayers(ConcurrentBag<Player> players, IEnumerable<HtmlNode> childRows)
         {
-            foreach (var childRow in childRows)
+            foreach (var childNodes in childRows.Select(childRow => childRow.ChildNodes).Where(childNodes => childNodes.Any()))
             {
-                var childNodes = childRow.ChildNodes;
-                if (childNodes.Any() == false)
-                {
-                    continue;
-                }
-
                 if (childNodes.Count() < 26)
                 {
                     throw new InvalidOperationException(String.Format("This method expects rows with at least 26 inner nodes. This row had '{0}' inner nodes", childNodes.Count));
                 }
 
+                var name = childNodes[5].InnerText.Split(',');
+                var lastName = name.First().Trim();
+                var firstName = name.Skip(1).FirstOrDefault();
+                if (String.IsNullOrEmpty(firstName) == false)
+                {
+                    firstName = firstName.Trim();
+                }
+
                 var player = new Player
-                                 {
-                                     Position = childNodes[1].InnerText,
-                                     Number = childNodes[3].InnerText,
-                                     Name = childNodes[5].InnerText,
-                                     Status = childNodes[7].InnerText,
-                                     Team = childNodes[25].InnerText
-                                 };
+                    {
+                        Position = childNodes[1].InnerText,
+                        Number = childNodes[3].InnerText,
+                        LastName = lastName,
+                        FirstName = firstName,
+                        Status = childNodes[7].InnerText,
+                        Team = childNodes[25].InnerText
+                    };
 
                 players.Add(player);
             }
