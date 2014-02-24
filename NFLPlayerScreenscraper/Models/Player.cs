@@ -8,6 +8,7 @@
         public string LastName { get; set; }
         public string Status { get; set; }
         public string Team { get; set; }
+        public int SourcePlayerId { get; set; }
 
         public override string ToString()
         {

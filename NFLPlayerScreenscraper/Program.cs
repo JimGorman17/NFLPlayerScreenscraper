@@ -40,10 +40,8 @@ namespace NFLPlayerScreenscraper
             }
 
             Console.WriteLine();
-#if DEBUG
             Console.WriteLine();
             Console.WriteLine("--- Press <ENTER> to exit. ---");
-#endif
 
             Console.ReadLine();
         }
@@ -152,7 +150,8 @@ namespace NFLPlayerScreenscraper
                         LastName = lastName,
                         FirstName = firstName,
                         Status = childNodes[7].InnerText,
-                        Team = childNodes[25].InnerText
+                        Team = childNodes[25].InnerText,
+                        SourcePlayerId = int.Parse(childNodes[5].ChildNodes.Single(cn => cn.Name == "a").Attributes.Single(a => a.Name == "href").Value.Split('/')[3])
                     };
 
                 players.Add(player);

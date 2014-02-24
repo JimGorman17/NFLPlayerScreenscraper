@@ -23,9 +23,9 @@ CREATE TABLE [dbo].[Teams](
 	[TeamID] [int] IDENTITY(1,1) NOT NULL,
 	[Location] [nvarchar](50) NOT NULL,
 	[Nickname] [nvarchar](50) NOT NULL,
-	[Abbreviation] [nchar](3) NOT NULL,
-	[Conference] [nchar](3) NOT NULL,
-	[Division] [nchar](7) NOT NULL,
+	[Abbreviation] [nvarchar](3) NOT NULL,
+	[Conference] [nvarchar](3) NOT NULL,
+	[Division] [nvarchar](7) NOT NULL,
  CONSTRAINT [PK_Teams] PRIMARY KEY CLUSTERED 
 (
 	[TeamID] ASC
@@ -80,15 +80,20 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Pl
 BEGIN
 CREATE TABLE [dbo].[Players](
 	[PlayerID] [int] IDENTITY(1,1) NOT NULL,
-	[Position] [nchar](3) NULL,
-	[Number] [nchar](2) NULL,
+	[Position] [nvarchar](3) NULL,
+	[Number] [nvarchar](2) NULL,
 	[FirstName] [nvarchar](30) NULL,
 	[LastName] [nvarchar](30) NOT NULL,
-	[Status] [nchar](3) NULL,
-	[Team] [nchar](3) NULL,
+	[Status] [nvarchar](3) NULL,
+	[Team] [nvarchar](3) NULL,
+	[SourcePlayerID] [int] NOT NULL,
  CONSTRAINT [PK_Players] PRIMARY KEY CLUSTERED 
 (
 	[PlayerID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY],
+CONSTRAINT [UK_Players] UNIQUE NONCLUSTERED 
+(
+	[SourcePlayerID] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 END
