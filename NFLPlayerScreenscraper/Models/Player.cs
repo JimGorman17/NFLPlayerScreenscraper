@@ -1,7 +1,10 @@
 ﻿namespace NFLPlayerScreenscraper.Models
 {
+    [PetaPoco.TableName("Players")]
+    [PetaPoco.PrimaryKey("PlayerID")]
     internal class Player
     {
+        public int PlayerId { get; set; }
         public string Position { get; set; }
         public string Number { get; set; }
         public string FirstName { get; set; }

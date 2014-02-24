@@ -21,23 +21,26 @@ namespace NFLPlayerScreenscraper
         {
             WriteBanner();
 
-            var numberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
-            if (numberOfPlayersInTheDatabase != 0)
+            var startingNumberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
+
+            var players = GetPlayersFromWeb();
+            ClearLine();
+            UpdateTheDatabase(players);
+            ClearLine();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Done.");
+
+            var endingNumberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
+            var numberOfPlayersInsertedIntoTheDatabase = endingNumberOfPlayersInTheDatabase -
+                                                         startingNumberOfPlayersInTheDatabase;
+
+            if (numberOfPlayersInsertedIntoTheDatabase != 0)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("There were already '{0}' players in the database. This is not an incremental insert program. Exiting...", numberOfPlayersInTheDatabase);
-                Console.ResetColor();
+                Console.WriteLine("{0} players were inserted into the database.", numberOfPlayersInsertedIntoTheDatabase);
             }
-            else
-            {
-                var players = GetPlayersFromWeb();
-                ClearLine();
-                InsertPlayersIntoTheDatabase(players);
-                ClearLine();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Done.");
-                Console.ResetColor();
-            }
+
+            Console.ResetColor();
 
             Console.WriteLine();
             Console.WriteLine();
@@ -88,14 +91,33 @@ namespace NFLPlayerScreenscraper
             Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
-        private static void InsertPlayersIntoTheDatabase(IEnumerable<Player> players)
+        private static void UpdateTheDatabase(IEnumerable<Player> playersRetrievedFromTheWebSite)
         {
-            Console.Write("\rInserting players into to the database.");
-            foreach (var player in players)
+            Console.Write("\rUpdating the players table in the database.");
+            foreach (var retrievedPlayer in playersRetrievedFromTheWebSite)
             {
-                Database.Insert("Players", "PlayerID", player);
+                var existingPlayerInTheDatabase = GetPlayerBySourcePlayerId(retrievedPlayer.SourcePlayerId);
+                if (existingPlayerInTheDatabase != null)
+                {
+                    existingPlayerInTheDatabase.Position = retrievedPlayer.Position;
+                    existingPlayerInTheDatabase.Number = retrievedPlayer.Number;
+                    existingPlayerInTheDatabase.LastName = retrievedPlayer.LastName;
+                    existingPlayerInTheDatabase.FirstName = retrievedPlayer.FirstName;
+                    existingPlayerInTheDatabase.Status = retrievedPlayer.Status;
+                    existingPlayerInTheDatabase.Team = retrievedPlayer.Team;
+                    Database.Update(existingPlayerInTheDatabase);
+                }
+                else
+                {
+                    Database.Insert("Players", "PlayerID", retrievedPlayer);
+                }
             }
-        } 
+        }
+
+        private static Player GetPlayerBySourcePlayerId(int sourcePlayerId)
+        {
+            return Database.SingleOrDefault<Player>("WHERE SourcePlayerID=@0", sourcePlayerId);
+        }
 
         private static void LoadAPageOfPlayers(ScrapingBrowser browser, HtmlNode rootNode, ConcurrentBag<Player> players)
         {
