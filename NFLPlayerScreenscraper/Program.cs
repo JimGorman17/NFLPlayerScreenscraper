@@ -21,24 +21,15 @@ namespace NFLPlayerScreenscraper
         {
             WriteBanner();
 
-            var startingNumberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
-
             var players = GetPlayersFromWeb();
             ClearLine();
-            UpdateTheDatabase(players);
+            var changeCounts = UpdateTheDatabase(players);
             ClearLine();
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Done.");
-
-            var endingNumberOfPlayersInTheDatabase = GetNumberOfPlayersInTheDatabase();
-            var numberOfPlayersInsertedIntoTheDatabase = endingNumberOfPlayersInTheDatabase -
-                                                         startingNumberOfPlayersInTheDatabase;
-
-            if (numberOfPlayersInsertedIntoTheDatabase != 0)
-            {
-                Console.WriteLine("{0} players were inserted into the database.", numberOfPlayersInsertedIntoTheDatabase);
-            }
+            Console.WriteLine("{0} players were inserted.", changeCounts.Inserted);
+            Console.WriteLine("{0} players were updated.", changeCounts.Updated);
 
             Console.ResetColor();
 
@@ -57,11 +48,6 @@ namespace NFLPlayerScreenscraper
             Console.WriteLine("https://github.com/TKirby42/NFLPlayerScreenscraper");
             Console.WriteLine("**************************************************");
             Console.WriteLine();
-        }
-
-        private static int GetNumberOfPlayersInTheDatabase()
-        {
-            return Database.ExecuteScalar<int>(Sql.Builder.Select("COUNT(PlayerID)").From("dbo.Players"));
         }
 
         private static IEnumerable<Player> GetPlayersFromWeb()
@@ -91,27 +77,49 @@ namespace NFLPlayerScreenscraper
             Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
-        private static void UpdateTheDatabase(IEnumerable<Player> playersRetrievedFromTheWebSite)
+        private static ChangeCounts UpdateTheDatabase(IEnumerable<Player> playersRetrievedFromTheWebSite)
         {
             Console.Write("\rUpdating the players table in the database.");
+
+            var changeCounts = new ChangeCounts();
             foreach (var retrievedPlayer in playersRetrievedFromTheWebSite)
             {
                 var existingPlayerInTheDatabase = GetPlayerBySourcePlayerId(retrievedPlayer.SourcePlayerId);
                 if (existingPlayerInTheDatabase != null)
                 {
-                    existingPlayerInTheDatabase.Position = retrievedPlayer.Position;
-                    existingPlayerInTheDatabase.Number = retrievedPlayer.Number;
-                    existingPlayerInTheDatabase.LastName = retrievedPlayer.LastName;
-                    existingPlayerInTheDatabase.FirstName = retrievedPlayer.FirstName;
-                    existingPlayerInTheDatabase.Status = retrievedPlayer.Status;
-                    existingPlayerInTheDatabase.Team = retrievedPlayer.Team;
-                    Database.Update(existingPlayerInTheDatabase);
+                    if (existingPlayerInTheDatabase.Position != retrievedPlayer.Position ||
+                        existingPlayerInTheDatabase.Number != retrievedPlayer.Number ||
+                        existingPlayerInTheDatabase.LastName != retrievedPlayer.LastName ||
+                        existingPlayerInTheDatabase.FirstName != retrievedPlayer.FirstName ||
+                        existingPlayerInTheDatabase.Status != retrievedPlayer.Status ||
+                        existingPlayerInTheDatabase.Team != retrievedPlayer.Team)
+                    {
+                        existingPlayerInTheDatabase.Position = retrievedPlayer.Position;
+                        existingPlayerInTheDatabase.Number = retrievedPlayer.Number;
+                        existingPlayerInTheDatabase.LastName = retrievedPlayer.LastName;
+                        existingPlayerInTheDatabase.FirstName = retrievedPlayer.FirstName;
+                        existingPlayerInTheDatabase.Status = retrievedPlayer.Status;
+                        existingPlayerInTheDatabase.Team = retrievedPlayer.Team;
+                        existingPlayerInTheDatabase.UpdateDate = DateTimeOffset.Now;
+                        Database.Update(existingPlayerInTheDatabase);
+
+                        changeCounts.Updated++;
+                    }
                 }
                 else
                 {
                     Database.Insert("Players", "PlayerID", retrievedPlayer);
+                    changeCounts.Inserted++;
                 }
             }
+
+            return changeCounts;
+        }
+
+        public class ChangeCounts
+        {
+            public int Inserted { get; set; }
+            public int Updated { get; set; }
         }
 
         private static Player GetPlayerBySourcePlayerId(int sourcePlayerId)
@@ -173,7 +181,8 @@ namespace NFLPlayerScreenscraper
                         FirstName = firstName,
                         Status = childNodes[7].InnerText,
                         Team = childNodes[25].InnerText,
-                        SourcePlayerId = int.Parse(childNodes[5].ChildNodes.Single(cn => cn.Name == "a").Attributes.Single(a => a.Name == "href").Value.Split('/')[3])
+                        SourcePlayerId = int.Parse(childNodes[5].ChildNodes.Single(cn => cn.Name == "a").Attributes.Single(a => a.Name == "href").Value.Split('/')[3]),
+                        CreateDate = DateTimeOffset.Now
                     };
 
                 players.Add(player);

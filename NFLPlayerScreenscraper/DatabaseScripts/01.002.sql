@@ -87,6 +87,8 @@ CREATE TABLE [dbo].[Players](
 	[Status] [nvarchar](3) NULL,
 	[Team] [nvarchar](3) NULL,
 	[SourcePlayerID] [int] NOT NULL,
+	[CreateDate] [datetimeoffset] NOT NULL,
+	[UpdateDate] [datetimeoffset] NULL
  CONSTRAINT [PK_Players] PRIMARY KEY CLUSTERED 
 (
 	[PlayerID] ASC

@@ -1,4 +1,6 @@
-﻿namespace NFLPlayerScreenscraper.Models
+﻿using System;
+
+namespace NFLPlayerScreenscraper.Models
 {
     [PetaPoco.TableName("Players")]
     [PetaPoco.PrimaryKey("PlayerID")]
@@ -12,6 +14,8 @@
         public string Status { get; set; }
         public string Team { get; set; }
         public int SourcePlayerId { get; set; }
+        public DateTimeOffset CreateDate { get; set; }
+        public DateTimeOffset? UpdateDate { get; set; }
 
         public override string ToString()
         {
