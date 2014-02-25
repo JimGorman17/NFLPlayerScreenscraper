@@ -3,23 +3,70 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Web;
 using HtmlAgilityPack;
 using NFLPlayerScreenscraper.Models;
 using PetaPoco;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
+using Topshelf;
 
 namespace NFLPlayerScreenscraper
 {
-    class Program
+    public class Program
+    {
+        static void Main(string[] args)
+        {
+            HostFactory.Run(x =>
+                {
+                    x.Service<ScreenscraperProgram>(s =>
+                        {
+                            s.ConstructUsing(name => new ScreenscraperProgram());
+                            s.WhenStarted(tc => tc.Start());
+                            s.WhenStopped(tc => tc.Stop());
+                        });
+                    x.RunAsLocalSystem();
+
+                    x.SetDescription( Environment.NewLine
+                                     +  "**************************************************" + Environment.NewLine
+                                     +  "NFL Player Screenscraper Program" + Environment.NewLine
+                                     +  "by Jim Gorman, December 2013" + Environment.NewLine
+                                     +  "https://github.com/TKirby42/NFLPlayerScreenscraper" + Environment.NewLine
+                                     +  "**************************************************");
+                    
+                    x.SetDisplayName("NFL Player Screenscraper");
+                    x.SetServiceName("NFLPlayerScreenscraper");
+                });
+        }
+    }
+
+    public class ScreenscraperProgram
     {
         private static readonly Database Database = new Database("localDB");
         const string BaseUrl = "http://www.nfl.com";
 
-        static void Main(string[] args)
+        private readonly Timer _timer;
+
+        public ScreenscraperProgram()
         {
-            WriteBanner();
+#if DEBUG
+            _timer = new Timer(TimeSpan.FromMinutes(.5).TotalMilliseconds) { AutoReset = true };
+#else
+            _timer = new Timer(TimeSpan.FromDays(1).TotalMilliseconds) { AutoReset = true};
+#endif
+            _timer.Elapsed += (sender, args) => Run();
+        }
+
+        public void Start() { _timer.Start(); }
+        public void Stop() { _timer.Stop(); }
+
+        private static void Run()
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Beginning at '{0}'.", DateTime.Now);
+            Console.ResetColor();
 
             var players = GetPlayersFromWeb();
             ClearLine();
@@ -27,26 +74,11 @@ namespace NFLPlayerScreenscraper
             ClearLine();
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Done.");
+            Console.WriteLine("Ending at '{0}'.", DateTime.Now);
             Console.WriteLine("{0} players were inserted.", changeCounts.Inserted);
             Console.WriteLine("{0} players were updated.", changeCounts.Updated);
 
             Console.ResetColor();
-
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine("--- Press <ENTER> to exit. ---");
-
-            Console.ReadLine();
-        }
-
-        private static void WriteBanner()
-        {
-            Console.WriteLine("**************************************************");
-            Console.WriteLine("NFL Player Screenscraper Program");
-            Console.WriteLine("by Jim Gorman, December 2013");
-            Console.WriteLine("https://github.com/TKirby42/NFLPlayerScreenscraper");
-            Console.WriteLine("**************************************************");
             Console.WriteLine();
         }
 
