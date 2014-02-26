@@ -25,7 +25,7 @@ CREATE TABLE [dbo].[Teams](
 	[Nickname] [nvarchar](50) NOT NULL,
 	[Abbreviation] [nvarchar](3) NOT NULL,
 	[Conference] [nvarchar](3) NOT NULL,
-	[Division] [nvarchar](7) NOT NULL,
+	[Division] [nvarchar](7) NOT NULL
  CONSTRAINT [PK_Teams] PRIMARY KEY CLUSTERED 
 (
 	[TeamID] ASC
@@ -88,7 +88,8 @@ CREATE TABLE [dbo].[Players](
 	[Team] [nvarchar](3) NULL,
 	[SourcePlayerID] [int] NOT NULL,
 	[CreateDate] [datetimeoffset] NOT NULL,
-	[UpdateDate] [datetimeoffset] NULL
+	[UpdateDate] [datetimeoffset] NULL,
+	[IsActive] [bit] NOT NULL
  CONSTRAINT [PK_Players] PRIMARY KEY CLUSTERED 
 (
 	[PlayerID] ASC

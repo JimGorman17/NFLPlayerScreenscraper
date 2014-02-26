@@ -16,6 +16,7 @@ namespace NFLPlayerScreenscraper.Models
         public int SourcePlayerId { get; set; }
         public DateTimeOffset CreateDate { get; set; }
         public DateTimeOffset? UpdateDate { get; set; }
+        public bool IsActive { get; set; }
 
         public override string ToString()
         {

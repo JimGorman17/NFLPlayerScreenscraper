@@ -67,16 +67,21 @@ namespace NFLPlayerScreenscraper
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Beginning at '{0}'.", DateTime.Now);
             Console.ResetColor();
+            
+            var playersRetrievedFromTheWebSite = GetPlayersFromWeb().ToList();
+            ClearLine();
+            var changeCounts = UpdateActivePlayers(playersRetrievedFromTheWebSite);
+            ClearLine();
 
-            var players = GetPlayersFromWeb();
-            ClearLine();
-            var changeCounts = UpdateTheDatabase(players);
-            ClearLine();
+            var sourcePlayerIdsFromTheDatabase = GetActiveSourcePlayerIdsFromTheDatabase();
+            var sourcePlayerIdsToDeactivate = sourcePlayerIdsFromTheDatabase.Except(playersRetrievedFromTheWebSite.Select(p => p.SourcePlayerId)).ToList();
+            DeactivateInactivePlayers(sourcePlayerIdsToDeactivate);
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Ending at '{0}'.", DateTime.Now);
             Console.WriteLine("{0} players were inserted.", changeCounts.Inserted);
             Console.WriteLine("{0} players were updated.", changeCounts.Updated);
+            Console.WriteLine("{0} players were deactivated.", sourcePlayerIdsToDeactivate.Count());
 
             Console.ResetColor();
             Console.WriteLine();
@@ -104,12 +109,18 @@ namespace NFLPlayerScreenscraper
             return players;
         }
 
+        private static IEnumerable<int> GetActiveSourcePlayerIdsFromTheDatabase()
+        {
+            var sql = Sql.Builder.Select("SourcePlayerID").From("[dbo].[Players]").Where("IsActive = @0", 1);
+            return Database.Query<int>(sql);
+        }
+
         private static void ClearLine()
         {
             Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
-        private static ChangeCounts UpdateTheDatabase(IEnumerable<Player> playersRetrievedFromTheWebSite)
+        private static ChangeCounts UpdateActivePlayers(IEnumerable<Player> playersRetrievedFromTheWebSite)
         {
             Console.Write("\rUpdating the players table in the database.");
 
@@ -133,6 +144,7 @@ namespace NFLPlayerScreenscraper
                         existingPlayerInTheDatabase.Status = retrievedPlayer.Status;
                         existingPlayerInTheDatabase.Team = retrievedPlayer.Team;
                         existingPlayerInTheDatabase.UpdateDate = DateTimeOffset.Now;
+                        existingPlayerInTheDatabase.IsActive = true;
                         Database.Update(existingPlayerInTheDatabase);
 
                         changeCounts.Updated++;
@@ -152,6 +164,17 @@ namespace NFLPlayerScreenscraper
         {
             public int Inserted { get; set; }
             public int Updated { get; set; }
+        }
+
+        private static void DeactivateInactivePlayers(IEnumerable<int> sourcePlayerIdsToDeactivate)
+        {
+            foreach (var sourcePlayerId in sourcePlayerIdsToDeactivate)
+            {
+                var player = GetPlayerBySourcePlayerId(sourcePlayerId);
+                player.UpdateDate = DateTimeOffset.Now;
+                player.IsActive = false;
+                Database.Update(player);
+            }
         }
 
         private static Player GetPlayerBySourcePlayerId(int sourcePlayerId)
@@ -214,7 +237,8 @@ namespace NFLPlayerScreenscraper
                         Status = childNodes[7].InnerText,
                         Team = childNodes[25].InnerText,
                         SourcePlayerId = int.Parse(childNodes[5].ChildNodes.Single(cn => cn.Name == "a").Attributes.Single(a => a.Name == "href").Value.Split('/')[3]),
-                        CreateDate = DateTimeOffset.Now
+                        CreateDate = DateTimeOffset.Now,
+                        IsActive = true
                     };
 
                 players.Add(player);
