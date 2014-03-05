@@ -72,7 +72,6 @@ namespace NFLPlayerScreenscraper
 
             try
             {
-
                 var playersRetrievedFromTheWebSite = GetPlayersFromWeb().ToList();
                 ClearLine();
                 var changeCounts = UpdateActivePlayers(playersRetrievedFromTheWebSite);
