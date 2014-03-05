@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -36,13 +37,14 @@ namespace NFLPlayerScreenscraper
                                      +  "**************************************************");
                     
                     x.SetDisplayName("NFL Player Screenscraper");
-                    x.SetServiceName("NFLPlayerScreenscraper");
+                    x.SetServiceName(Process.GetCurrentProcess().ProcessName);
                 });
         }
     }
 
     public class ScreenscraperProgram
     {
+        private static readonly EventLog ApplicationEventLog = new EventLog { Source = Process.GetCurrentProcess().ProcessName };
         private static readonly Database Database = new Database("localDB");
         const string BaseUrl = "http://www.nfl.com";
 
@@ -51,7 +53,7 @@ namespace NFLPlayerScreenscraper
         public ScreenscraperProgram()
         {
 #if DEBUG
-            _timer = new Timer(TimeSpan.FromMinutes(.5).TotalMilliseconds) { AutoReset = true };
+            _timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds) { AutoReset = true };
 #else
             _timer = new Timer(TimeSpan.FromDays(1).TotalMilliseconds) { AutoReset = true};
 #endif
@@ -65,26 +67,62 @@ namespace NFLPlayerScreenscraper
         {
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Beginning at '{0}'.", DateTime.Now);
+            LogMessage(String.Format("Beginning at '{0}'.", DateTime.Now));
             Console.ResetColor();
-            
-            var playersRetrievedFromTheWebSite = GetPlayersFromWeb().ToList();
-            ClearLine();
-            var changeCounts = UpdateActivePlayers(playersRetrievedFromTheWebSite);
-            ClearLine();
 
-            var sourcePlayerIdsFromTheDatabase = GetActiveSourcePlayerIdsFromTheDatabase();
-            var sourcePlayerIdsToDeactivate = sourcePlayerIdsFromTheDatabase.Except(playersRetrievedFromTheWebSite.Select(p => p.SourcePlayerId)).ToList();
-            DeactivateInactivePlayers(sourcePlayerIdsToDeactivate);
+            try
+            {
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Ending at '{0}'.", DateTime.Now);
-            Console.WriteLine("{0} players were inserted.", changeCounts.Inserted);
-            Console.WriteLine("{0} players were updated.", changeCounts.Updated);
-            Console.WriteLine("{0} players were deactivated.", sourcePlayerIdsToDeactivate.Count());
+                var playersRetrievedFromTheWebSite = GetPlayersFromWeb().ToList();
+                ClearLine();
+                var changeCounts = UpdateActivePlayers(playersRetrievedFromTheWebSite);
+                ClearLine();
 
-            Console.ResetColor();
+                var sourcePlayerIdsFromTheDatabase = GetActiveSourcePlayerIdsFromTheDatabase();
+                var sourcePlayerIdsToDeactivate =
+                    sourcePlayerIdsFromTheDatabase.Except(playersRetrievedFromTheWebSite.Select(p => p.SourcePlayerId))
+                                                  .ToList();
+                DeactivateInactivePlayers(sourcePlayerIdsToDeactivate);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                var message =
+                    String.Format("Ending at '{0}'.", DateTime.Now) + Environment.NewLine +
+                    String.Format("{0} players were inserted.", changeCounts.Inserted) + Environment.NewLine +
+                    String.Format("{0} players were updated.", changeCounts.Updated) + Environment.NewLine +
+                    String.Format("{0} players were deactivated.", sourcePlayerIdsToDeactivate.Count());
+                LogMessage(message);
+            }
+            catch (Exception e)
+            {
+                LogException(e);
+            }
+            finally
+            {
+                Console.ResetColor();
+                Console.WriteLine();
+            }
+        }
+
+        private static void LogMessage(string message)
+        {
+            Console.WriteLine(message);
+#if !DEBUG
+            ApplicationEventLog.WriteEntry(message);
+#endif
+        }
+
+        private static void LogException(Exception exception)
+        {
+            var endingString = String.Format("Ending at '{0}'.", DateTime.Now);
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(exception);
             Console.WriteLine();
+            Console.WriteLine(endingString);
+#if true
+            ApplicationEventLog.WriteEntry(exception.ToString(), EventLogEntryType.Error);
+            ApplicationEventLog.WriteEntry(endingString);
+#endif
         }
 
         private static IEnumerable<Player> GetPlayersFromWeb()
