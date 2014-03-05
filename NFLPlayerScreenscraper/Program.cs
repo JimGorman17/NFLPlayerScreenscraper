@@ -27,7 +27,7 @@ namespace NFLPlayerScreenscraper
                             s.WhenStarted(tc => tc.Start());
                             s.WhenStopped(tc => tc.Stop());
                         });
-                    x.RunAsLocalSystem();
+                    x.RunAsNetworkService();
 
                     x.SetDescription( Environment.NewLine
                                      +  "**************************************************" + Environment.NewLine
