@@ -72,6 +72,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="DatabaseScripts\01.004.sql" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
