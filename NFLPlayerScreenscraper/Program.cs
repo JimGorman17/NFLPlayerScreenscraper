@@ -118,7 +118,7 @@ namespace NFLPlayerScreenscraper
             Console.WriteLine(exception);
             Console.WriteLine();
             Console.WriteLine(endingString);
-#if true
+#if !DEBUG
             ApplicationEventLog.WriteEntry(exception.ToString(), EventLogEntryType.Error);
             ApplicationEventLog.WriteEntry(endingString);
 #endif
@@ -154,7 +154,39 @@ namespace NFLPlayerScreenscraper
 
         private static void ClearLine()
         {
-            Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
+            Console.Write("\r" + new string(' ', WindowWidth) + "\r");
+        }
+
+        private static int? _windowWidth;
+        private static int WindowWidth
+        {
+            get
+            {
+                if (_windowWidth.HasValue)
+                {
+                    return _windowWidth.Value;
+                }
+                
+                _windowWidth = GetWindowWidth();
+                return _windowWidth.Value;
+            }
+        }
+
+        private static int GetWindowWidth()
+        {
+            var windowWidth = 0;
+            try
+            {
+                windowWidth = Console.WindowWidth;
+            }
+            // ReSharper disable EmptyGeneralCatchClause
+            catch
+            // ReSharper restore EmptyGeneralCatchClause
+            {
+                // Must be running in non-interactive mode as a service.
+            }
+
+            return windowWidth;
         }
 
         private static ChangeCounts UpdateActivePlayers(IEnumerable<Player> playersRetrievedFromTheWebSite)
