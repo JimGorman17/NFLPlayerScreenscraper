@@ -91,11 +91,11 @@ IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[
 ALTER TABLE [dbo].[Comments] CHECK CONSTRAINT [FK_Comments_Users]
 GO
 
-/****** Object:  Table [dbo].[AuthTokens]    Script Date: 03/09/2014 23:37:05 ******/
+/****** Object:  Table [dbo].[AuthTokens]    Script Date: 03/09/2014 23:50:40 ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AuthTokens]') AND type in (N'U'))
 DROP TABLE [dbo].[AuthTokens]
 GO
-/****** Object:  Table [dbo].[AuthTokens]    Script Date: 03/09/2014 23:37:05 ******/
+/****** Object:  Table [dbo].[AuthTokens]    Script Date: 03/09/2014 23:50:40 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -109,7 +109,7 @@ CREATE TABLE [dbo].[AuthTokens](
 	[CreateDate] [datetimeoffset] NOT NULL,
  CONSTRAINT [PK_AuthTokens] PRIMARY KEY CLUSTERED 
 (
-	[AuthTokenID] ASC
+	[Token] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 END
