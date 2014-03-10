@@ -105,6 +105,7 @@ BEGIN
 CREATE TABLE [dbo].[AuthTokens](
 	[AuthToken] [nchar](130) NOT NULL,
 	[GoogleID] [nvarchar](50) NOT NULL,
+	[CreateDate] [datetimeoffset] NOT NULL,
  CONSTRAINT [PK_AuthTokens] PRIMARY KEY CLUSTERED 
 (
 	[AuthToken] ASC
