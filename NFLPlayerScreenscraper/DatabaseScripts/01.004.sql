@@ -34,6 +34,7 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type in (N'U'))
 BEGIN
 CREATE TABLE [dbo].[Users](
+	[UserID] [int] IDENTITY(1,1) NOT NULL,
 	[GoogleID] [nvarchar](50) NOT NULL,
 	[DisplayName] [nvarchar](100) NOT NULL,
 	[GivenName] [nvarchar](100) NULL,
