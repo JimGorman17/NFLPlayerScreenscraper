@@ -43,6 +43,8 @@ CREATE TABLE [dbo].[Users](
 	[Picture] [nvarchar](150) NULL,
 	[Gender] [nvarchar](6) NULL,
 	[Locale] [nvarchar](10) NULL,
+	[CreateDate] [datetimeoffset] NOT NULL,
+	[UpdateDate] [datetimeoffset] NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[GoogleID] ASC
