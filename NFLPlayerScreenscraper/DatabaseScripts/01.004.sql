@@ -36,6 +36,12 @@ BEGIN
 CREATE TABLE [dbo].[Users](
 	[GoogleID] [nvarchar](50) NOT NULL,
 	[DisplayName] [nvarchar](100) NOT NULL,
+	[GivenName] [nvarchar](100) NULL,
+	[FamilyName] [nvarchar](100) NULL,
+	[Link] [nvarchar](100) NULL,
+	[Picture] [nvarchar](150) NULL,
+	[Gender] [nvarchar](6) NULL,
+	[Locale] [nvarchar](10) NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[GoogleID] ASC
