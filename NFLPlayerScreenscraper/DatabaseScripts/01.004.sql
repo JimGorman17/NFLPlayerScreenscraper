@@ -56,6 +56,8 @@ CREATE TABLE [dbo].[Comments](
 	[GoogleID] [nvarchar](50) NOT NULL,
 	[Comment] [nvarchar](140) NOT NULL,
 	[Deleted] [bit] NOT NULL,
+	[CreateDate] [datetimeoffset] NOT NULL,
+	[UpdateDate] [datetimeoffset] NULL,
  CONSTRAINT [PK_Comments] PRIMARY KEY CLUSTERED 
 (
 	[CommentID] ASC
