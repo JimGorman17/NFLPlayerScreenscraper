@@ -74,6 +74,12 @@ CREATE TABLE [dbo].[Comments](
 ) ON [PRIMARY]
 END
 GO
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Comments]') AND name = N'IX_Comments')
+CREATE NONCLUSTERED INDEX [IX_Comments] ON [dbo].[Comments] 
+(
+	[PlayerID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
 /****** Object:  Default [DF_Comments_Deleted]    Script Date: 03/08/2014 00:17:47 ******/
 IF Not EXISTS (SELECT * FROM sys.default_constraints WHERE object_id = OBJECT_ID(N'[dbo].[DF_Comments_Deleted]') AND parent_object_id = OBJECT_ID(N'[dbo].[Comments]'))
 Begin
