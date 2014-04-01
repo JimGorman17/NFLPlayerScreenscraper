@@ -45,12 +45,21 @@ CREATE TABLE [dbo].[Users](
 	[Locale] [nvarchar](10) NULL,
 	[CreateDate] [datetimeoffset] NOT NULL,
 	[UpdateDate] [datetimeoffset] NULL,
+	[FavoriteTeamID] [int] NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[GoogleID] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 END
+GO
+/****** Object:  ForeignKey [FK_Users_Teams]    Script Date: 03/31/2014 20:37:01 ******/
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Users_Teams]') AND parent_object_id = OBJECT_ID(N'[dbo].[Users]'))
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [FK_Users_Teams] FOREIGN KEY([FavoriteTeamID])
+REFERENCES [dbo].[Teams] ([TeamID])
+GO
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_Users_Teams]') AND parent_object_id = OBJECT_ID(N'[dbo].[Users]'))
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [FK_Users_Teams]
 GO
 /****** Object:  Table [dbo].[Comments]    Script Date: 03/08/2014 00:17:47 ******/
 SET ANSI_NULLS ON
