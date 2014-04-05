@@ -169,7 +169,6 @@ CREATE TABLE [dbo].[ErrorLogs](
 	[PhoneID] [nvarchar](50) NULL,
 	[Message] [nvarchar](max) NULL,
 	[StackTrace] [nvarchar](max) NULL,
-	[OccurredDate] [datetime] NULL,
 	[CreateDate] [datetimeoffset](7) NOT NULL,
 	[UserID] [int] NULL,
 	[GoogleID] [nvarchar](50) NULL,
