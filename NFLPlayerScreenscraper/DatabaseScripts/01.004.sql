@@ -49,6 +49,10 @@ CREATE TABLE [dbo].[Users](
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[GoogleID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY],
+ CONSTRAINT [UK_Users] UNIQUE NONCLUSTERED 
+(
+	[UserID] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 END
@@ -139,4 +143,56 @@ CREATE TABLE [dbo].[AuthTokens](
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 END
+GO
+/****** Object:  ForeignKey [FK_ErrorLogs_Users]    Script Date: 04/04/2014 22:18:20 ******/
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs] DROP CONSTRAINT [FK_ErrorLogs_Users]
+GO
+/****** Object:  ForeignKey [FK_ErrorLogs_Users1]    Script Date: 04/04/2014 22:18:20 ******/
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users1]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs] DROP CONSTRAINT [FK_ErrorLogs_Users1]
+GO
+/****** Object:  Table [dbo].[ErrorLogs]    Script Date: 04/04/2014 22:18:20 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ErrorLogs]') AND type in (N'U'))
+DROP TABLE [dbo].[ErrorLogs]
+GO
+/****** Object:  Table [dbo].[ErrorLogs]    Script Date: 04/04/2014 22:18:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ErrorLogs]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[ErrorLogs](
+	[ErrorLogID] [int] IDENTITY(1,1) NOT NULL,
+	[Application] [nvarchar](100) NOT NULL,
+	[PhoneID] [nvarchar](50) NULL,
+	[Message] [nvarchar](max) NULL,
+	[StackTrace] [nvarchar](max) NULL,
+	[OccurredDate] [datetime] NULL,
+	[CreateDate] [datetimeoffset](7) NOT NULL,
+	[UserID] [int] NULL,
+	[GoogleID] [nvarchar](50) NULL,
+ CONSTRAINT [PK_ErrorLogs] PRIMARY KEY CLUSTERED 
+(
+	[ErrorLogID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+END
+GO
+/****** Object:  ForeignKey [FK_ErrorLogs_Users]    Script Date: 04/04/2014 22:18:20 ******/
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs]  WITH CHECK ADD  CONSTRAINT [FK_ErrorLogs_Users] FOREIGN KEY([GoogleID])
+REFERENCES [dbo].[Users] ([GoogleID])
+GO
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs] CHECK CONSTRAINT [FK_ErrorLogs_Users]
+GO
+/****** Object:  ForeignKey [FK_ErrorLogs_Users1]    Script Date: 04/04/2014 22:18:20 ******/
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users1]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs]  WITH CHECK ADD  CONSTRAINT [FK_ErrorLogs_Users1] FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users1]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
+ALTER TABLE [dbo].[ErrorLogs] CHECK CONSTRAINT [FK_ErrorLogs_Users1]
 GO
