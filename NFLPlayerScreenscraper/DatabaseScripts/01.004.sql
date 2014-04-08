@@ -196,3 +196,50 @@ GO
 IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_ErrorLogs_Users1]') AND parent_object_id = OBJECT_ID(N'[dbo].[ErrorLogs]'))
 ALTER TABLE [dbo].[ErrorLogs] CHECK CONSTRAINT [FK_ErrorLogs_Users1]
 GO
+/****** Object:  ForeignKey [FK_FlaggedComments_Comments]    Script Date: 04/08/2014 13:48:58 ******/
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Comments]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments] DROP CONSTRAINT [FK_FlaggedComments_Comments]
+GO
+/****** Object:  ForeignKey [FK_FlaggedComments_Users]    Script Date: 04/08/2014 13:48:58 ******/
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments] DROP CONSTRAINT [FK_FlaggedComments_Users]
+GO
+/****** Object:  Table [dbo].[FlaggedComments]    Script Date: 04/08/2014 13:48:58 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[FlaggedComments]') AND type in (N'U'))
+DROP TABLE [dbo].[FlaggedComments]
+GO
+/****** Object:  Table [dbo].[FlaggedComments]    Script Date: 04/08/2014 13:48:58 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[FlaggedComments]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[FlaggedComments](
+	[FlaggedCommentID] [int] IDENTITY(1,1) NOT NULL,
+	[CommentID] [int] NOT NULL,
+	[GoogleID] [nvarchar](50) NOT NULL,
+	[FlaggedDate] [datetimeoffset](7) NOT NULL,
+ CONSTRAINT [PK_FlaggedComments] PRIMARY KEY CLUSTERED 
+(
+	[FlaggedCommentID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+END
+GO
+/****** Object:  ForeignKey [FK_FlaggedComments_Comments]    Script Date: 04/08/2014 13:48:58 ******/
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Comments]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments]  WITH CHECK ADD  CONSTRAINT [FK_FlaggedComments_Comments] FOREIGN KEY([CommentID])
+REFERENCES [dbo].[Comments] ([CommentID])
+GO
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Comments]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments] CHECK CONSTRAINT [FK_FlaggedComments_Comments]
+GO
+/****** Object:  ForeignKey [FK_FlaggedComments_Users]    Script Date: 04/08/2014 13:48:58 ******/
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments]  WITH CHECK ADD  CONSTRAINT [FK_FlaggedComments_Users] FOREIGN KEY([GoogleID])
+REFERENCES [dbo].[Users] ([GoogleID])
+GO
+IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_FlaggedComments_Users]') AND parent_object_id = OBJECT_ID(N'[dbo].[FlaggedComments]'))
+ALTER TABLE [dbo].[FlaggedComments] CHECK CONSTRAINT [FK_FlaggedComments_Users]
+GO
