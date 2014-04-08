@@ -46,6 +46,7 @@ CREATE TABLE [dbo].[Users](
 	[CreateDate] [datetimeoffset] NOT NULL,
 	[UpdateDate] [datetimeoffset] NULL,
 	[FavoriteTeamID] [int] NULL,
+	[IsAdmin] [bit] NOT NULL,
  CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
 (
 	[GoogleID] ASC
