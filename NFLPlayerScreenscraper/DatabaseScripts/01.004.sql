@@ -135,7 +135,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Au
 BEGIN
 CREATE TABLE [dbo].[AuthTokens](
 	[AuthTokenID] [int] IDENTITY(1,1) NOT NULL,
-	[Token] [nchar](130) NOT NULL,
+	[Token] [nchar](150) NOT NULL,
 	[GoogleID] [nvarchar](50) NOT NULL,
 	[CreateDate] [datetimeoffset] NOT NULL,
  CONSTRAINT [PK_AuthTokens] PRIMARY KEY CLUSTERED 
