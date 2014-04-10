@@ -220,6 +220,7 @@ CREATE TABLE [dbo].[FlaggedComments](
 	[CommentID] [int] NOT NULL,
 	[GoogleID] [nvarchar](50) NOT NULL,
 	[FlaggedDate] [datetimeoffset](7) NOT NULL,
+	[Handled] [bit] NOT NULL,
  CONSTRAINT [PK_FlaggedComments] PRIMARY KEY CLUSTERED 
 (
 	[FlaggedCommentID] ASC
